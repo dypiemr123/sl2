@@ -1,0 +1,60 @@
+#12 TensorFlow/Pytorch implementation of CNN
+
+
+# Step 1: Install TensorFlow (in case it's not installed)
+!pip install tensorflow
+
+# Step 2: Import required libraries
+import tensorflow as tf
+from tensorflow.keras import datasets, layers, models
+import matplotlib.pyplot as plt
+
+# Step 3: Load and preprocess the dataset (CIFAR-10 dataset)
+(train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
+
+# Step 4: Normalize the image data to values between 0 and 1 for better training
+train_images, test_images = train_images / 255.0, test_images / 255.0
+
+# Step 5: Build the CNN model
+model = models.Sequential([
+    # First convolutional layer with 32 filters, kernel size (3,3), and ReLU activation function
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)),
+    # First max-pooling layer with pool size (2,2)
+    layers.MaxPooling2D((2, 2)),
+    
+    # Second convolutional layer with 64 filters
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    # Second max-pooling layer with pool size (2,2)
+    layers.MaxPooling2D((2, 2)),
+    
+    # Flatten the 2D outputs to 1D vector for fully connected layers
+    layers.Flatten(),
+    
+    # Fully connected layer with 64 neurons and ReLU activation
+    layers.Dense(64, activation='relu'),
+    
+    # Output layer with 10 neurons (since CIFAR-10 has 10 classes), softmax activation for classification
+    layers.Dense(10, activation='softmax')
+])
+
+# Step 6: Compile the model
+model.compile(optimizer='adam', 
+              loss='sparse_categorical_crossentropy', 
+              metrics=['accuracy'])
+
+# Step 7: Train the model with training data
+history = model.fit(train_images, train_labels, epochs=10, 
+                    validation_data=(test_images, test_labels))
+
+# Step 8: Evaluate the model performance on test data
+test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
+print(f"Test accuracy: {test_acc}")
+
+# Step 9: Plot the training and validation accuracy/loss
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title('Training and Validation Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()

@@ -1,0 +1,79 @@
+# 8. Write a python program to illustrate ART neural network
+
+import numpy as np  # Import numpy for numerical operations
+
+class ART1:
+    def __init__(self, num_features, num_clusters, vigilance=0.5):
+        self.num_features = num_features  # Store number of input features
+        self.num_clusters = num_clusters  # Store number of clusters
+        self.vigilance = vigilance  # Store vigilance threshold
+        self.weights = np.random.rand(num_clusters, num_features * 2)  # Initialize random weights for clusters (doubled size)
+
+    # Complement coding: extend input by adding its complement (1 - input)
+    def complement_coding(self, input_pattern):
+        return np.concatenate((input_pattern, 1 - input_pattern))  # Concatenate original input with complement
+
+    # Calculate the match between input pattern and cluster weights
+    def match_function(self, input_pattern, cluster_weights):
+        return np.sum(np.minimum(input_pattern, cluster_weights)) / np.sum(input_pattern)  # Match measure
+
+    # Train the network with a set of input patterns
+    def train(self, input_patterns):
+        for input_pattern in input_patterns:  # Iterate through each input pattern
+            input_pattern = self.complement_coding(input_pattern)  # Apply complement coding to input
+            matched = False  # Flag to track if any cluster matches
+
+            # Iterate through each cluster
+            for i in range(self.num_clusters):  # Loop over all clusters
+                match = self.match_function(input_pattern, self.weights[i])  # Calculate match with cluster i
+                if match >= self.vigilance:  # If the match exceeds vigilance threshold
+                    self.weights[i] = np.minimum(self.weights[i], input_pattern)  # Update weights of matching cluster
+                    matched = True  # Mark as matched
+                    break  # Stop searching once a match is found
+
+            # If no match found, assign to a new cluster
+            if not matched:  # If no match was found
+                # Update the least similar cluster's weights with the current input pattern
+                self.weights[np.argmin(np.sum(np.abs(self.weights - input_pattern), axis=1))] = input_pattern
+
+    # Predict which cluster the input pattern belongs to
+    def predict(self, input_pattern):
+        input_pattern = self.complement_coding(input_pattern)  # Apply complement coding to input
+        best_match = -1  # Initialize best match score
+        best_index = -1  # Initialize best matching cluster index
+
+        # Check each cluster for the best match
+        for i in range(self.num_clusters):  # Loop over all clusters
+            match = self.match_function(input_pattern, self.weights[i])  # Calculate match with cluster i
+            if match > best_match and match >= self.vigilance:  # If this match is better than the previous one
+                best_match = match  # Update best match score
+                best_index = i  # Update the best matching cluster index
+
+        return best_index  # Return the index of the best matching cluster
+
+# Example usage
+if __name__ == "__main__":
+    # Define the set of input patterns to train on
+    input_patterns = np.array([
+        [1, 0, 1, 0],  # First input pattern
+        [1, 1, 0, 0],  # Second input pattern
+        [0, 1, 1, 0],  # Third input pattern
+        [1, 0, 1, 1]   # Fourth input pattern
+    ])
+
+    num_features = input_patterns.shape[1]  # Get the number of features (columns) in the input patterns
+    num_clusters = 2  # Set the number of clusters we want to form
+    vigilance = 0.6  # Set the vigilance threshold for matching clusters
+
+    # Create an ART1 neural network instance
+    art1 = ART1(num_features, num_clusters, vigilance)
+
+    # Train the ART1 network on the input patterns
+    art1.train(input_patterns)
+
+    # Test with a new input pattern and predict its cluster
+    test_pattern = np.array([1, 0, 1, 0])  # Define a test input pattern
+    cluster = art1.predict(test_pattern)  # Predict the cluster for the test pattern
+
+    # Print the predicted cluster for the test pattern
+    print(f"The test pattern {test_pattern} belongs to cluster {cluster}")

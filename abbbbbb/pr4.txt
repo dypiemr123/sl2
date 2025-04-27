@@ -1,0 +1,68 @@
+#4 With a suitable example demonstrate the perceptron learning law with its decision regions using python. Give the output in graphical form.
+
+# Import necessary libraries
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the Perceptron class
+class Perceptron:
+    def __init__(self, input_size, learning_rate=0.1):
+        # Initialize weights, bias, and learning rate
+        self.weights = np.zeros(input_size)
+        self.bias = 0
+        self.learning_rate = learning_rate
+
+    def predict(self, inputs):
+        # Activation function
+        return 1 if np.dot(inputs, self.weights) + self.bias >= 0 else -1
+
+    def train(self, inputs, labels, epochs=10):
+        # Train the perceptron with given inputs, labels, and number of epochs
+        for _ in range(epochs):
+            for i in range(inputs.shape[0]):
+                # Get the predicted output
+                y_pred = self.predict(inputs[i])
+                # Check for misclassification and update weights and bias
+                if y_pred != labels[i]:
+                    self.weights += self.learning_rate * labels[i] * inputs[i]
+                    self.bias += self.learning_rate * labels[i]
+
+# Input data and labels (X1, X2 coordinates and their corresponding labels)
+# Labels: 1 for positive class, -1 for negative class
+X = np.array([[0, 0], [1, 0], [0, 1], [2, 2], [3, 3], [4, 4], [1, 2], [2, 1], [3, 1], [4, 2]])
+Y = np.array([-1, -1, -1, 1, 1, 1, 1, -1, 1, 1])
+
+# Initialize the Perceptron with 2 input features
+perceptron = Perceptron(input_size=2)
+
+# Train the Perceptron
+perceptron.train(X, Y, epochs=6)
+
+# Create a grid for plotting decision regions
+x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+xx, yy = np.meshgrid(np.linspace(x_min, x_max, 500), np.linspace(y_min, y_max, 500))
+
+# Compute decision boundary
+Z = np.sign(np.dot(np.c_[xx.ravel(), yy.ravel()], perceptron.weights) + perceptron.bias)
+Z = Z.reshape(xx.shape)
+
+# Plot decision regions
+plt.figure(figsize=(6, 5))
+plt.contourf(xx, yy, Z, alpha=0.6, cmap=plt.cm.coolwarm)  # Plot decision boundary
+plt.scatter(X[:, 0], X[:, 1], c=Y, cmap=plt.cm.Paired, edgecolors='k', s=100)  # Plot data points
+plt.xlabel('X1')
+plt.ylabel('X2')
+plt.title('Perceptron Decision Regions')
+plt.show()
+
+# Plot decision boundary line (optional)
+x_line = np.linspace(x_min, x_max, 100)
+y_line = -(perceptron.weights[0] * x_line + perceptron.bias) / perceptron.weights[1]
+plt.plot(x_line, y_line, 'k--', label='Decision Boundary')
+plt.scatter(X[:, 0], X[:, 1], c=Y, cmap=plt.cm.Paired, edgecolors='k', s=100)
+plt.xlabel('X1')
+plt.ylabel('X2')
+plt.title('Perceptron with Decision Boundary')
+plt.legend()
+plt.show()

@@ -1,0 +1,97 @@
+#For an image classification challenge, create and train a ConvNet in Python using TensorFlow. Also,try to improve the performance of the model by applying various hyperparameter tuning to reduce the overfitting or underfitting problems that might occur. Maintain graphs of comparisons.
+
+
+
+
+
+# Import necessary libraries
+import tensorflow as tf
+from tensorflow.keras import datasets, layers, models
+from tensorflow.keras.callbacks import EarlyStopping
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Load and preprocess the dataset (CIFAR-10 dataset)
+(train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
+
+# Normalize the image data to be between 0 and 1
+train_images, test_images = train_images / 255.0, test_images / 255.0
+
+# Set up a function to create a ConvNet model
+def create_model(optimizer='adam', dropout_rate=0.3, filters=32):
+    model = models.Sequential([
+        layers.Conv2D(filters, (3, 3), activation='relu', input_shape=(32, 32, 3)),
+        layers.MaxPooling2D((2, 2)),
+        layers.Conv2D(filters*2, (3, 3), activation='relu'),
+        layers.MaxPooling2D((2, 2)),
+        layers.Conv2D(filters*4, (3, 3), activation='relu'),
+        layers.MaxPooling2D((2, 2)),
+        layers.Flatten(),
+        layers.Dense(64, activation='relu'),
+        layers.Dropout(dropout_rate),
+        layers.Dense(10, activation='softmax')
+    ])
+    
+    model.compile(optimizer=optimizer,
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+    return model
+
+# Set up the EarlyStopping callback to avoid overfitting
+early_stopping = EarlyStopping(monitor='val_loss', patience=5)
+
+# Create and train the initial model with default hyperparameters
+model_default = create_model()
+history_default = model_default.fit(train_images, train_labels, epochs=50, 
+                                    validation_data=(test_images, test_labels), 
+                                    callbacks=[early_stopping])
+
+# Hyperparameter tuning:
+# 1. Changing optimizer to SGD with momentum
+model_sgd = create_model(optimizer='SGD', dropout_rate=0.5, filters=64)
+history_sgd = model_sgd.fit(train_images, train_labels, epochs=50, 
+                            validation_data=(test_images, test_labels), 
+                            callbacks=[early_stopping])
+
+# 2. Changing dropout rate and number of filters
+model_tuned = create_model(optimizer='adam', dropout_rate=0.4, filters=64)
+history_tuned = model_tuned.fit(train_images, train_labels, epochs=50, 
+                                validation_data=(test_images, test_labels), 
+                                callbacks=[early_stopping])
+
+# Plot the results for comparison
+
+plt.figure(figsize=(12, 6))
+
+# Plot training and validation accuracy for each model
+plt.subplot(1, 2, 1)
+plt.plot(history_default.history['accuracy'], label='Train Accuracy (Default)', color='blue')
+plt.plot(history_default.history['val_accuracy'], label='Val Accuracy (Default)', color='orange')
+plt.plot(history_sgd.history['accuracy'], label='Train Accuracy (SGD)', color='green')
+plt.plot(history_sgd.history['val_accuracy'], label='Val Accuracy (SGD)', color='red')
+plt.plot(history_tuned.history['accuracy'], label='Train Accuracy (Tuned)', color='purple')
+plt.plot(history_tuned.history['val_accuracy'], label='Val Accuracy (Tuned)', color='brown')
+plt.title('Training and Validation Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+
+# Plot training and validation loss for each model
+plt.subplot(1, 2, 2)
+plt.plot(history_default.history['loss'], label='Train Loss (Default)', color='blue')
+plt.plot(history_default.history['val_loss'], label='Val Loss (Default)', color='orange')
+plt.plot(history_sgd.history['loss'], label='Train Loss (SGD)', color='green')
+plt.plot(history_sgd.history['val_loss'], label='Val Loss (SGD)', color='red')
+plt.plot(history_tuned.history['loss'], label='Train Loss (Tuned)', color='purple')
+plt.plot(history_tuned.history['val_loss'], label='Val Loss (Tuned)', color='brown')
+plt.title('Training and Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+# Evaluate the best model (tuned)
+test_loss, test_acc = model_tuned.evaluate(test_images, test_labels, verbose=2)
+print(f"Test Accuracy (Tuned Model): {test_acc:.4f}")

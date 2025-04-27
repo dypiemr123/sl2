@@ -1,0 +1,56 @@
+# 9. Write a python program to design a Hopfield Network which stores 4 vectors 
+
+import numpy as np  # Import numpy for matrix operations
+
+class HopfieldNetwork:
+    def __init__(self, num_neurons):
+        self.num_neurons = num_neurons  # Number of neurons in the network
+        self.weights = np.zeros((num_neurons, num_neurons))  # Initialize weight matrix with zeros
+
+    # Function to train the network using Hebbian learning rule
+    def train(self, patterns):
+        # Loop through all patterns to update weights
+        for pattern in patterns:
+            pattern = pattern.reshape(-1, 1)  # Reshape the pattern into column vector
+            self.weights += np.dot(pattern, pattern.T)  # Update weight matrix using outer product of pattern
+
+        # Set the diagonal elements of the weight matrix to zero (no self-connections)
+        np.fill_diagonal(self.weights, 0)
+
+    # Function to update the network until it stabilizes
+    def update(self, pattern):
+        pattern = pattern.copy()  # Create a copy of the pattern to avoid in-place modification
+        for _ in range(self.num_neurons):  # Loop over all neurons
+            for i in range(self.num_neurons):  # Loop over all neurons
+                net_input = np.dot(self.weights[i], pattern)  # Calculate the net input for the neuron
+                pattern[i] = 1 if net_input >= 0 else -1  # Update the neuron state based on net input
+        return pattern  # Return the stabilized pattern
+
+    # Function to test the network on a given pattern
+    def test(self, pattern):
+        return self.update(pattern)  # Update the pattern and return the final output
+
+
+# Example usage
+if __name__ == "__main__":
+    # Define 4 binary patterns to store
+    patterns = np.array([
+        [1, 1, -1, -1],  # Pattern 1
+        [1, -1, 1, -1],  # Pattern 2
+        [-1, 1, 1, -1],  # Pattern 3
+        [-1, -1, 1, 1]   # Pattern 4
+    ])
+
+    # Create the Hopfield network with 4 neurons (one for each element in the vector)
+    hopfield = HopfieldNetwork(num_neurons=4)
+
+    # Train the Hopfield network with the given patterns
+    hopfield.train(patterns)
+
+    # Test the network with a noisy version of a pattern
+    noisy_pattern = np.array([1, 1, 1, -1])  # A noisy version of pattern 1
+    print("Noisy Pattern:", noisy_pattern)
+
+    # Test the network to see if it recalls the stored pattern
+    output_pattern = hopfield.test(noisy_pattern)
+    print("Recalled Pattern:", output_pattern)

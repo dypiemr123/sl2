@@ -1,0 +1,38 @@
+#2.Generate ANDNOT function using McCulloch-Pitts neural net by a python program 
+
+# Importing numpy to handle array operations and vectorized dot product
+import numpy as np
+
+# McCulloch-Pitts Neuron function that calculates the output based on inputs, weights, and threshold
+def mp_neuron(inputs, weights, threshold):
+    # Calculate the weighted sum of inputs (dot product between inputs and weights)
+    weighted_sum = np.dot(inputs, weights)
+    
+    # Apply the threshold function: if weighted sum >= threshold, output 1, else output 0
+    output = 1 if weighted_sum >= threshold else 0
+    
+    # Return the output value of the neuron
+    return output
+
+# ANDNOT function using the McCulloch-Pitts model
+def and_not(x1, x2):
+    # Define weights for the inputs: weight for x1 = 1, weight for x2 = -1
+    weights = [1, -1]
+    
+    # Define the threshold value for activation
+    threshold = 1
+    
+    # Combine the input values into a numpy array
+    inputs = np.array([x1, x2])
+    
+    # Call the mp_neuron function to calculate the output based on inputs, weights, and threshold
+    output = mp_neuron(inputs, weights, threshold)
+    
+    # Return the calculated output (0 or 1)
+    return output
+
+# Testing the ANDNOT function with different inputs
+print(and_not(0, 0))  # Expected output: 0 (0 AND NOT 0 = 0)
+print(and_not(1, 0))  # Expected output: 1 (1 AND NOT 0 = 1)
+print(and_not(0, 1))  # Expected output: 0 (0 AND NOT 1 = 0)
+print(and_not(1, 1))  # Expected output: 0 (1 AND NOT 1 = 0)

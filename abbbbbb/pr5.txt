@@ -1,0 +1,53 @@
+#5 Write a python program to recognize the numbers 0, 1, 2, 39. A 5 * 3 matrix forms the numbers. For any valid point it is taken as 1 and invalid point it is taken as 0. The net has to be trained to recognize all the numbers and when the test data is given, the network has to recognize the particular numbers 
+
+import numpy as np
+
+# Perceptron Class: A simple implementation of the perceptron algorithm
+class Perceptron:
+    def __init__(self, input_size, learning_rate=0.1):
+        self.weights = np.zeros(input_size)  # Initialize weights to zero
+        self.bias = 0  # Initialize bias to zero
+        self.learning_rate = learning_rate  # Learning rate
+
+    def predict(self, inputs):
+        # Calculate the weighted sum of inputs and add bias, then apply step function
+        return 1 if np.dot(inputs, self.weights) + self.bias >= 0 else 0
+
+    def train(self, inputs, labels, epochs=10):
+        # Training the perceptron with given inputs and labels
+        for _ in range(epochs):
+            for i in range(len(inputs)):
+                output = self.predict(inputs[i])  # Predict output
+                error = labels[i] - output  # Calculate error
+                self.weights += self.learning_rate * error * inputs[i]  # Update weights
+                self.bias += self.learning_rate * error  # Update bias
+
+# Define the 5x3 matrix representation of digits 0, 1, 2, and 39 (flattened to 15 elements each)
+X_train = np.array([
+    [1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1],  # Number 0
+    [0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0],  # Number 1
+    [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1],  # Number 2
+    [1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1]   # Number 39
+])
+
+# Labels for training (0 = not 39, 1 = 39)
+y_train = np.array([0, 0, 0, 1])  # Classify as 39 or not
+
+# Initialize the perceptron (input size is 15 as we have 15 features)
+perceptron = Perceptron(input_size=15)
+
+# Train the perceptron for 10 epochs
+perceptron.train(X_train, y_train, epochs=10)
+
+# Test data (same format as training data)
+X_test = np.array([
+    [1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1],  # Test Number 0
+    [0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0],  # Test Number 1
+    [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1],  # Test Number 2
+    [1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1]   # Test Number 39
+])
+
+# Test and print predictions
+for i, test_data in enumerate(X_test):
+    prediction = perceptron.predict(test_data)  # Get prediction
+    print(f"Test {i}: {'Recognized as 39' if prediction == 1 else 'Recognized as not 39'}")

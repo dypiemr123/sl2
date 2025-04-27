@@ -1,0 +1,50 @@
+#3 Write a Python Program using Perceptron Neural Network to recognize even and odd numbers. Given numbers are in ASCII form 0 to 9
+
+
+# Import the numpy library for numerical operations like matrix multiplication and array manipulations
+import numpy as np
+
+# Perceptron class definition
+class Perceptron:
+    def __init__(self, input_size, learning_rate=0.1):
+        # Initialize weights to zeros. The size of weights is equal to the number of input features.
+        self.weights = np.zeros(input_size)
+        # Initialize the bias to 0. Bias helps in shifting the decision boundary.
+        self.bias = 0
+        # Set the learning rate (how much the weights are adjusted during training).
+        self.learning_rate = learning_rate
+
+    def predict(self, inputs):
+        # Compute the weighted sum of inputs, then apply the step activation function
+        # Step function: If the weighted sum is >= 0, output 1 (True), else output 0 (False)
+        return 1 if np.dot(inputs, self.weights) + self.bias >= 0 else 0
+
+    def train(self, inputs, labels, epochs=10):
+        # Train the perceptron for a number of epochs (iterations over the dataset)
+        for _ in range(epochs):
+            for i in range(len(inputs)):  # Iterate through each training example
+                # Predict the output using the current weights
+                output = self.predict(inputs[i])
+                # Calculate the error (difference between expected and predicted output)
+                error = labels[i] - output
+                # Update the weights based on the error (using the perceptron learning rule)
+                self.weights += self.learning_rate * error * inputs[i]
+                # Update the bias in a similar manner
+                self.bias += self.learning_rate * error
+
+# Define the input data: ASCII values of characters '0' to '9'
+inputs = np.array([[48], [49], [50], [51], [52], [53], [54], [55], [56], [57]])  # ASCII values of '0'-'9'
+# Define the labels: Even numbers should have label 0, Odd numbers should have label 1
+labels = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1])  # Even (0) or Odd (1)
+
+# Initialize a perceptron with input size 1 (because each input is a single ASCII value)
+perceptron = Perceptron(input_size=1)
+# Train the perceptron using the input data and the labels, for 100 epochs
+perceptron.train(inputs, labels, epochs=100)
+
+# Test the trained perceptron model
+test_inputs = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57]  # Test with ASCII values of '0' to '9'
+# Loop through each test input (ASCII value)
+for num in test_inputs:
+    # Print the character corresponding to the ASCII value, along with its parity (Even or Odd)
+    print(f"Input: {chr(num)} (ASCII: {num}) -> {'Odd' if perceptron.predict([num]) == 1 else 'Even'}")

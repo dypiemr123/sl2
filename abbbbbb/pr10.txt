@@ -1,0 +1,55 @@
+#10 . Write Python program to implement CNN object detection. Discuss numerous performance evaluation metrics for evaluating the object-detecting algorithms' performance.
+
+
+import torch
+import numpy as np
+import os
+from PIL import Image, ImageDraw, ImageFont
+import matplotlib.pyplot as plt
+
+# Load pre-trained YOLOv5 model
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # Correct repository
+model.conf = 0.25  # Set confidence threshold
+
+def detect_objects(image_path):
+    """Detect objects in an image using YOLOv5."""
+    if not os.path.exists(image_path):
+        print(f"Error: Image '{image_path}' not found.")
+        return None
+    image = Image.open(image_path).convert("RGB")  # Ensure correct format
+    results = model(image)  # Perform inference
+    results.show()
+
+    detections = results.pandas().xyxy[0]  # Get bounding boxes
+    if detections.empty:
+        print("No objects detected.")
+        return None
+
+    return detections
+
+def plot_detections(image_path, detections):
+    """Plot detected objects on the image."""
+    if detections is None:
+        print("No objects to plot.")
+        return
+    image = Image.open(image_path).convert("RGB")
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.load_default()
+
+    for _, row in detections.iterrows():
+        x1, y1, x2, y2 = int(row['xmin']), int(row['ymin']), int(row['xmax']), int(row['ymax'])
+        label = f"{row['name']} ({row['confidence']:.2f})"
+        draw.rectangle([x1, y1, x2, y2], outline="green", width=2)
+        draw.text((x1, y1 - 10), label, fill="green", font=font)
+
+    plt.imshow(image)
+    plt.axis("off")
+    plt.show()
+
+if __name__ == "__main__":
+    #  add r in the path starting
+    image_path = r"C:\Users\SAINATH\Downloads\img2.jpg" # Ensure this file exists in the working directory
+    detections = detect_objects(image_path)
+    if detections is not None:
+        print(detections)
+        plot_detections(image_path, detections)

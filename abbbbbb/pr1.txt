@@ -1,0 +1,13 @@
+# 1. Write a Python program to plot a few activation functions that are being used in neural networks
+import numpy as np   # Import numpy for numerical operations
+import matplotlib.pyplot as plt   # Import matplotlib.pyplot for plotting graphs
+
+x = np.linspace(-10, 10, 100)   # Create an array of 100 values from -10 to 10
+
+plt.plot(x, 1/(1 + np.exp(-x)), label='Sigmoid')   # Plot the Sigmoid activation function
+plt.plot(x, np.tanh(x), label='Tanh')   # Plot the Tanh activation function
+plt.plot(x, np.maximum(0, x), label='ReLU')   # Plot the ReLU activation function
+
+plt.legend()   # Display the legend to differentiate between the functions
+plt.title('Activation Functions')   # Set the title of the graph
+plt.show()   # Display the graph

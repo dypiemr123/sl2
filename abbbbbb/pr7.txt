@@ -1,0 +1,52 @@
+#7 Write a python program to show Back Propagation Network for the XOR function with Binary Input
+and Output
+import numpy as np
+
+# Sigmoid activation function and its derivative
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def sigmoid_derivative(x):
+    return x * (1 - x)
+
+# XOR input data and output data
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])  # 4 input combinations for XOR
+y = np.array([[0], [1], [1], [0]])  # Expected outputs for XOR
+
+# Randomly initialize weights and biases
+weights_input_hidden = np.random.uniform(-1, 1, (2, 4))  # Input to hidden layer weights (2 inputs, 4 hidden neurons)
+weights_hidden_output = np.random.uniform(-1, 1, (4, 1))  # Hidden to output layer weights (4 hidden, 1 output neuron)
+bias_hidden = np.random.uniform(-1, 1, (1, 4))  # Bias for hidden layer
+bias_output = np.random.uniform(-1, 1, (1, 1))  # Bias for output layer
+
+# Training process for 10000 iterations
+for epoch in range(10000):
+    # Forward pass: Compute hidden layer output
+    hidden_layer_input = np.dot(X, weights_input_hidden) + bias_hidden
+    hidden_layer_output = sigmoid(hidden_layer_input)
+    
+    # Forward pass: Compute final output
+    output_layer_input = np.dot(hidden_layer_output, weights_hidden_output) + bias_output
+    output_layer_output = sigmoid(output_layer_input)
+    
+    # Error calculation
+    error = y - output_layer_output
+    
+    # Backpropagation: Compute the gradients for weights and biases
+    d_output = error * sigmoid_derivative(output_layer_output)  # Derivative for output layer
+    error_hidden_layer = d_output.dot(weights_hidden_output.T)  # Error for hidden layer
+    d_hidden_layer = error_hidden_layer * sigmoid_derivative(hidden_layer_output)  # Derivative for hidden layer
+    
+    # Update weights and biases using gradient descent
+    weights_hidden_output += hidden_layer_output.T.dot(d_output) * 0.1  # Update hidden-output weights
+    weights_input_hidden += X.T.dot(d_hidden_layer) * 0.1  # Update input-hidden weights
+    bias_output += np.sum(d_output, axis=0, keepdims=True) * 0.1  # Update output bias
+    bias_hidden += np.sum(d_hidden_layer, axis=0, keepdims=True) * 0.1  # Update hidden bias
+    
+    # Print error every 1000 epochs to track progress
+    if epoch % 1000 == 0:
+        print(f"Epoch {epoch}, Error: {np.mean(np.abs(error))}")
+
+# After training, display the final output
+print("\nTrained network outputs:")
+print(output_layer_output)
